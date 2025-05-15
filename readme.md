@@ -1,5 +1,13 @@
 # Classificador de Flores com KNN
 
+## Equipe
+<ul>
+  <li>Cícero Jeferson Santos de Araújo 2023011591</li>
+  <li>Francisco Airton Araújo Júnior 2023010960</li>
+  <li>Jorge Pereira de Oliveira 2023011027</li>
+  <li>Rafael Guimarães Januário 2023010600</li>
+</ul>
+
 Esta aplicação é um exemplo simples de um classificador de flores usando o algoritmo KNN aplicado ao dataset Iris. A aplicação é construída com Python e Flask, e exibe tanto a predição para novos valores quanto as métricas de desempenho (acurácia, precisão e recall) para os conjuntos de treinamento e teste. Além disso, o front-end apresenta gráficos da matriz de confusão e da superfície de decisão, e a interface conta com uma logo da UFCA centralizada no topo.
 
 ## Pré-requisitos
