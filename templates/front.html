@@ -1,165 +1,345 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
-  <title>Classificador de Flores com KNN</title>
+  <title>Classificador de Flores</title>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f2f2f2;
-      text-align: center;
+      font-family: 'Montserrat', Arial, sans-serif;
+      margin: 0;
+      background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+      min-height: 100vh;
+      color: #222;
     }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      padding: 40px 30px 30px 30px;
+    }
+
     .logo-container {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
-    h1, h2 {
+
+    .logo-container img {
+      width: 160px;
+      filter: drop-shadow(0 2px 8px #007bff33);
+    }
+
+    h1 {
+      color: #007BFF;
+      font-size: 2.4rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    h2 {
       color: #333;
+      margin-top: 30px;
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
     }
+
+    label {
+      font-weight: 600;
+      margin-right: 10px;
+      color: #444;
+    }
+
+    select {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #b0c4de;
+      font-size: 1rem;
+      background: #f7fbff;
+      margin-bottom: 10px;
+      transition: border 0.2s;
+    }
+
+    select:focus {
+      border: 1.5px solid #007BFF;
+      outline: none;
+    }
+
+    .btn-group {
+      margin: 18px 0 25px 0;
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+    }
+
     button {
-      padding: 10px 20px;
-      margin: 10px 0;
+      padding: 12px 28px;
       border: none;
       cursor: pointer;
-      background-color: #007BFF;
+      background: linear-gradient(90deg, #007BFF 60%, #0056b3 100%);
       color: white;
-      border-radius: 4px;
-      font-size: 16px;
+      border-radius: 6px;
+      font-size: 1.08rem;
+      font-weight: 600;
+      box-shadow: 0 2px 8px #007bff22;
+      transition: background 0.2s, transform 0.1s;
     }
-    button:hover {
-      opacity: 0.8;
+
+    button:disabled {
+      background: #b0c4de;
+      cursor: not-allowed;
     }
-    #testResults {
-      margin-top: 20px;
-      background: white;
-      padding: 15px;
-      border-radius: 4px;
-      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+
+    button:hover:not(:disabled) {
+      background: linear-gradient(90deg, #0056b3 60%, #007BFF 100%);
+      transform: translateY(-2px) scale(1.03);
+    }
+
+    form#formPredict {
+      background: #f7fbff;
+      border-radius: 10px;
+      padding: 22px 18px 10px 18px;
+      margin: 0 auto 18px auto;
+      max-width: 420px;
+      box-shadow: 0 2px 8px #007bff11;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    input[type="number"] {
+      padding: 8px 10px;
+      width: 170px;
+      border: 1.5px solid #b0c4de;
+      border-radius: 6px;
+      font-size: 1rem;
+      background: #fff;
+      transition: border 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border: 1.5px solid #007BFF;
+      outline: none;
+    }
+
+    #resultadoPredict {
+      margin-top: 18px;
+      padding: 12px;
+      background: #e6f9e6;
+      border: 1.5px solid #00cc66;
+      border-radius: 6px;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #008040;
       display: none;
+      box-shadow: 0 2px 8px #00cc6611;
+    }
+
+    #testResults {
+      margin-top: 32px;
+      background: #f7fbff;
+      padding: 24px 18px 18px 18px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px #007bff11;
+      display: none;
+      max-width: 850px;
       margin-left: auto;
       margin-right: auto;
-      max-width: 800px;
     }
+
+    #metrics {
+      text-align: left;
+      margin-bottom: 18px;
+      color: #222;
+    }
+
+    #metrics h3 {
+      margin-bottom: 6px;
+      color: #007BFF;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
     #metrics p {
-      margin: 5px 0;
+      margin: 3px 0 3px 10px;
+      font-size: 1rem;
     }
-    .form-group {
+
+    .graph {
+      margin-top: 10px;
+      max-width: 350px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px #007bff11;
+      border: 1px solid #e0eafc;
+      background: #fff;
+      padding: 6px;
+    }
+
+    .graphs-row {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .graph-block {
+      flex: 1 1 320px;
+      min-width: 260px;
+      max-width: 400px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 12px 8px 8px 8px;
+      box-shadow: 0 2px 8px #007bff11;
       margin-bottom: 10px;
     }
-    input[type="number"] {
-      padding: 5px;
-      width: 200px;
-      margin: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      text-align: center;
+
+    .graph-block h3 {
+      font-size: 1rem;
+      color: #444;
+      margin-bottom: 6px;
+      font-weight: 600;
     }
-    #resultadoPredict {
-      margin-top: 15px;
-      padding: 10px;
-      background: #e0ffe0;
-      border: 1px solid #00cc00;
-      border-radius: 4px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #006600;
-      display: none;
-    }
-    .graph {
-      margin-top: 15px;
-      max-width: 400px;
-    }
+
     /* Spinner CSS */
     #loading {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      margin-top: 20px;
+      gap: 12px;
+      margin-top: 18px;
+      margin-bottom: 18px;
     }
+
     .spinner {
       display: inline-block;
-      width: 40px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       border: 4px solid #007BFF;
       border-top-color: transparent;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
+
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
-    /* Container dos resultados, inicialmente oculto */
+
     #resultsContent {
       display: none;
     }
+
+    @media (max-width: 700px) {
+      .container {
+        padding: 18px 4vw 18px 4vw;
+      }
+
+      .graphs-row {
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .graph-block {
+        max-width: 100%;
+      }
+
+      form#formPredict {
+        max-width: 100%;
+      }
+    }
   </style>
 </head>
-<body>
-  <!-- Logo da UFCA no topo -->
-  <div class="logo-container">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/8/8e/Logomarca_UFCA.svg" alt="Logo UFCA" width="200">
-  </div>
 
-  <h1>Classificador de Flores com KNN</h1>
-  <div>
-    <button id="btnTreinar" onclick="treinar()">Treino</button>
-    <button onclick="testar()">Teste</button>
-  </div>
-  <div>
-    <h2>Teste Novo Valor</h2>
-    <form id="formPredict">
-      <div class="form-group">
-        <input type="number" step="any" name="sepal_length" placeholder="Comprimento da Sépala (cm)" required>
-        <input type="number" step="any" name="sepal_width" placeholder="Largura da Sépala (cm)" required>
-      </div>
-      <div class="form-group">
-        <input type="number" step="any" name="petal_length" placeholder="Comprimento da Pétala (cm)" required>
-        <input type="number" step="any" name="petal_width" placeholder="Largura da Pétala (cm)" required>
-      </div>
-      <button type="submit">Enviar Valores</button>
-    </form>
-    <div id="resultadoPredict">Resultado da Predição: </div>
-  </div>
-  
-  <div id="testResults">
-    <h2>Resultados do Teste</h2>
-    <div id="loading">
-      <div class="spinner"></div>
-      <span>Carregando resultados...</span>
+<body>
+  <div class="container">
+    <div class="logo-container">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/8/8e/Logomarca_UFCA.svg" alt="Logo UFCA">
     </div>
-    <div id="resultsContent">
-      <div id="metrics"></div>
-      <div>
-        <h3>Matriz de Confusão</h3>
-        <img id="cmImage" class="graph" src="" alt="Matriz de Confusão">
+
+    <h1 id="title" style="text-align: center;">Classificador de Flores com KNN</h1>
+    <div>
+      <label for="modelSelect">Escolha o Modelo:</label>
+      <select id="modelSelect">
+        <option value="knn">KNN</option>
+        <option value="tree">Árvore de Decisão</option>
+        <option value="rf">Random Forest</option>
+        <option value="svm">SVM</option>
+        <option value="log">Regressão Logística</option>
+      </select>
+    </div>
+    <div class="btn-group">
+      <button id="btnTreinar" onclick="treinar()">Treinar</button>
+      <button onclick="testar()">Testar</button>
+    </div>
+    <div>
+      <h2>Teste Novo Valor</h2>
+      <form id="formPredict">
+        <div class="form-group">
+          <input type="number" step="any" name="sepal_length" placeholder="Comprimento da Sépala (cm)" required>
+          <input type="number" step="any" name="sepal_width" placeholder="Largura da Sépala (cm)" required>
+        </div>
+        <div class="form-group">
+          <input type="number" step="any" name="petal_length" placeholder="Comprimento da Pétala (cm)" required>
+          <input type="number" step="any" name="petal_width" placeholder="Largura da Pétala (cm)" required>
+        </div>
+        <button type="submit">Enviar Valores</button>
+      </form>
+      <div id="resultadoPredict">Resultado da Predição: </div>
+    </div>
+
+    <div id="testResults">
+      <h2>Resultados do Teste</h2>
+      <div id="loading">
+        <div class="spinner"></div>
+        <span>Carregando resultados...</span>
       </div>
-      <div>
-        <h3>Superfície de Decisão</h3>
-        <img id="dsImage" class="graph" src="" alt="Superfície de Decisão">
+      <div id="resultsContent">
+        <div id="metrics"></div>
+        <div class="graphs-row">
+          <div class="graph-block">
+            <h3>Matriz de Confusão</h3>
+            <img id="cmImage" class="graph" src="" alt="Matriz de Confusão">
+          </div>
+          <div class="graph-block">
+            <h3>Superfície de Decisão</h3>
+            <img id="dsImage" class="graph" src="" alt="Superfície de Decisão">
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  
   <script>
     function treinar() {
       document.getElementById('btnTreinar').disabled = true;
+      const modeloSelecionado = document.getElementById('modelSelect').value;
+
       fetch('/train', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({dataset: "iris"})
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataset: "iris", model: modeloSelecionado })
       })
-      .then(response => response.json())
-      .then(data => {
-        alert(data.message);
-        document.getElementById('btnTreinar').style.backgroundColor = "green";
-        document.getElementById('btnTreinar').disabled = false;
-      })
-      .catch(error => {
-        console.error('Erro:', error);
-        document.getElementById('btnTreinar').disabled = false;
-      });
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+          document.getElementById('btnTreinar').style.background = "linear-gradient(90deg, #00c851 60%, #007BFF 100%)";
+          document.getElementById('btnTreinar').disabled = false;
+        })
+        .catch(error => {
+          console.error('Erro:', error);
+          alert("Erro no treinamento.");
+          document.getElementById('btnTreinar').disabled = false;
+        });
     }
 
     function testar() {
@@ -167,19 +347,19 @@
       testResultsDiv.style.display = "block";
       document.getElementById('loading').style.display = "flex";
       document.getElementById('resultsContent').style.display = "none";
-      
+
       fetch('/test')
-      .then(response => response.json())
-      .then(data => {
-        let testAcc = (data.test_metrics.accuracy * 100).toFixed(1);
-        let testPrec = (data.test_metrics.precision * 100).toFixed(1);
-        let testRec = (data.test_metrics.recall * 100).toFixed(1);
-        
-        let trainAcc = (data.train_metrics.accuracy * 100).toFixed(1);
-        let trainPrec = (data.train_metrics.precision * 100).toFixed(1);
-        let trainRec = (data.train_metrics.recall * 100).toFixed(1);
-        
-        let metricsHTML = `
+        .then(response => response.json())
+        .then(data => {
+          let testAcc = (data.test_metrics.accuracy * 100).toFixed(1);
+          let testPrec = (data.test_metrics.precision * 100).toFixed(1);
+          let testRec = (data.test_metrics.recall * 100).toFixed(1);
+
+          let trainAcc = (data.train_metrics.accuracy * 100).toFixed(1);
+          let trainPrec = (data.train_metrics.precision * 100).toFixed(1);
+          let trainRec = (data.train_metrics.recall * 100).toFixed(1);
+
+          let metricsHTML = `
          <h3>Métricas de Treinamento</h3>
           <p>Acurácia: ${trainAcc}%</p>
           <p>Precisão: ${trainPrec}%</p>
@@ -189,24 +369,22 @@
           <p>Acurácia: ${testAcc}%</p>
           <p>Precisão: ${testPrec}%</p>
           <p>Recall: ${testRec}%</p>
-          <hr>
-          <h1>Gráficos de Teste</h1>
         `;
-        
-        document.getElementById('metrics').innerHTML = metricsHTML;
-        document.getElementById('cmImage').src = "data:image/png;base64," + data.confusion_matrix;
-        document.getElementById('dsImage').src = "data:image/png;base64," + data.decision_surface;
-        
-        document.getElementById('loading').style.display = "none";
-        document.getElementById('resultsContent').style.display = "block";
-      })
-      .catch(error => {
-        console.error('Erro:', error);
-        document.getElementById('loading').innerText = "Erro ao carregar resultados.";
-      });
+
+          document.getElementById('metrics').innerHTML = metricsHTML;
+          document.getElementById('cmImage').src = "data:image/png;base64," + data.confusion_matrix;
+          document.getElementById('dsImage').src = "data:image/png;base64," + data.decision_surface;
+
+          document.getElementById('loading').style.display = "none";
+          document.getElementById('resultsContent').style.display = "block";
+        })
+        .catch(error => {
+          console.error('Erro:', error);
+          document.getElementById('loading').innerText = "Erro ao carregar resultados.";
+        });
     }
 
-    document.getElementById('formPredict').addEventListener('submit', function(e) {
+    document.getElementById('formPredict').addEventListener('submit', function (e) {
       e.preventDefault();
       const formData = new FormData(this);
       const data = {
@@ -215,20 +393,43 @@
         petal_length: parseFloat(formData.get('petal_length')),
         petal_width: parseFloat(formData.get('petal_width'))
       };
-      
+
       fetch('/predict', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       })
-      .then(response => response.json())
-      .then(result => {
-        const resultadoDiv = document.getElementById('resultadoPredict');
-        resultadoDiv.innerText = "Resultado da Predição: " + result.predicao;
-        resultadoDiv.style.display = "block";
-      })
-      .catch(error => console.error('Erro:', error));
+        .then(response => response.json())
+        .then(result => {
+          const resultadoDiv = document.getElementById('resultadoPredict');
+          resultadoDiv.innerText = "Resultado da Predição: " + result.predicao;
+          resultadoDiv.style.display = "block";
+        })
+        .catch(error => console.error('Erro:', error));
+    });
+
+    document.getElementById('modelSelect').addEventListener('change', function () {
+      const selectedModel = this.value;
+      const title = document.getElementById('title');
+      switch (selectedModel) {
+        case 'knn':
+          title.innerText = "Classificador de Flores com KNN";
+          break;
+        case 'tree':
+          title.innerText = "Classificador de Flores com Árvore de Decisão";
+          break;
+        case 'rf':
+          title.innerText = "Classificador de Flores com Random Forest";
+          break;
+        case 'svm':
+          title.innerText = "Classificador de Flores com SVM";
+          break;
+        case 'log':
+          title.innerText = "Classificador de Flores com Regressão Logística";
+          break;
+      }
     });
   </script>
 </body>
+
 </html>

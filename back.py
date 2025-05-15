@@ -11,10 +11,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
 
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+
+
 app = Flask(__name__)
 
 model = None
-X_train, X_test, y_train, y_test = None, None, None, None
+X_train, X_test, y_train, y_test, selected_model = None, None, None, None, None
 
 @app.route('/')
 def home():
@@ -22,20 +28,29 @@ def home():
 
 @app.route('/train', methods=['POST'])
 def train():
-    global model, X_train, X_test, y_train, y_test
+    global model, X_train, X_test, y_train, y_test, selected_model
+
+    # Lê o nome do modelo enviado do front-end (padrão é KNN)
+    selected_model = request.json.get("model", "knn")
+
     # Carregar o dataset Iris
     iris = load_iris()
     X = iris.data
     y = iris.target
 
-    # Dividir em treino e teste (70% treino, 30% teste)
+    # Dividir em treino e teste
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-    # Criar e treinar o classificador KNN (usando os 4 atributos)
-    model = KNeighborsClassifier(n_neighbors=3)
+    # Escolher modelo
+    try:
+        model = create_model(selected_model)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    # Treinar o modelo selecionado
     model.fit(X_train, y_train)
 
-    return jsonify({"message": "Treinamento concluído"})
+    return jsonify({"message": f"Treinamento concluído com o modelo: {selected_model}"})
 
 @app.route('/test', methods=['GET'])
 def test():
@@ -122,7 +137,9 @@ def test():
     iris = load_iris()
     X_train_2 = X_train[:, 2:4]
     X_test_2 = X_test[:, 2:4]
-    model2 = KNeighborsClassifier(n_neighbors=3)
+    
+    # Treinar o mesmo tipo de modelo, mas usando apenas os atributos 2 e 3
+    model2 = create_model(selected_model)
     model2.fit(X_train_2, y_train)
     
     x_min, x_max = X_train_2[:, 0].min() - 1, X_train_2[:, 0].max() + 1
@@ -177,6 +194,20 @@ def predict():
     acc_train = model.score(X_train, y_train)
     # Retorna o resultado com a acurácia formatada
     return jsonify({"predicao": f"{result} (ACC: {round(acc_train*100, 0)}%)"})
+
+def create_model(name):
+    if name == "knn":
+        return KNeighborsClassifier(n_neighbors=3)
+    elif name == "tree":
+        return DecisionTreeClassifier()
+    elif name == "rf":
+        return RandomForestClassifier()
+    elif name == "svm":
+        return SVC(probability=True)
+    elif name == "log":
+        return LogisticRegression(max_iter=200)
+    else:
+        raise ValueError("Modelo inválido")
 
 
 if __name__ == '__main__':
